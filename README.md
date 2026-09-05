@@ -1,24 +1,31 @@
-To develop locally:
+To develop locally with Vercel's serverless functions:
 
 ```
 npm install
-vc dev
+vercel dev
 ```
 
 ```
-open http://localhost:3000
+open http://localhost:3000/api/save-contact
 ```
+
+Available API routes:
+
+- `POST /api/save-contact`
+- `POST /api/admin-login`
+- `GET /api/admin-contacts`
+- `DELETE /api/admin-delete-contact?id=<contact-id>`
 
 To build locally:
 
 ```
 npm install
-vc build
+vercel build
 ```
 
 To deploy:
 
 ```
 npm install
-vc deploy
+vercel deploy
 ```
