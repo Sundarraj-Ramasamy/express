@@ -35,7 +35,7 @@ export default async function handler(req, res) {
     if (password !== storedPassword) {
       return res.status(401).json({ error: 'Invalid credentials.' });
     }
-    const token = jwt.sign({ user: username }, JWT_SECRET, { expiresIn: '2h' });
+    const token = jwt.sign({ user: username }, JWT_SECRET, { expiresIn: '1h' });
     res.json({ token });
   } catch (error) {
     res.status(500).json({ error: 'Login failed.' });
