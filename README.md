@@ -4,7 +4,6 @@ To develop locally with Vercel's serverless functions:
 npm install
 vercel dev
 ```
-
 ```
 open http://localhost:3000/api/save-contact
 ```
