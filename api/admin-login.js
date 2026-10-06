@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import jwt from 'jsonwebtoken';
+import { handleCors } from '../lib/cors.js';
 
 const MONGODB_URI = process.env.MONGODB_URI;
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -21,19 +22,7 @@ async function dbConnect() {
 }
 
 export default async function handler(req, res) {
-  const allowedOrigins = ['https://agaramai.com', 'http://localhost:5173'];
-  const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-  }
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.setHeader('Vary', 'Origin');
-  if (req.method === 'OPTIONS') return res.status(204).end();
-
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
+  if (!handleCors(req, res, 'POST')) return;
   const { username, password } = req.body;
   const storedUsername = process.env.ADMIN_USERNAME;
   const storedPassword = process.env.ADMIN_PASSWORD;

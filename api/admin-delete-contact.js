@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import jwt from 'jsonwebtoken';
+import { handleCors } from '../lib/cors.js';
 
 const MONGODB_URI = process.env.MONGODB_URI;
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -46,19 +47,7 @@ function requireAuth(req, res) {
 }
 
 export default async function handler(req, res) {
-  const allowedOrigins = ['https://agaramai.com', 'http://localhost:5173'];
-  const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-  }
-  res.setHeader('Access-Control-Allow-Methods', 'DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.setHeader('Vary', 'Origin');
-  if (req.method === 'OPTIONS') return res.status(204).end();
-
-  if (req.method !== 'DELETE') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
+  if (!handleCors(req, res, 'DELETE')) return;
   if (!requireAuth(req, res)) return;
   const { id } = req.query;
   if (!id) return res.status(400).json({ error: 'Missing contact id.' });
