@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import { handleCors } from '../lib/cors.js';
+import { consumeContactRateLimit } from '../lib/rate-limit.js';
 
 const MONGODB_URI = process.env.MONGODB_URI;
 
@@ -31,12 +32,23 @@ const Contact = mongoose.models.Contact || mongoose.model('Contact', contactSche
 
 export default async function handler(req, res) {
   if (!handleCors(req, res, 'POST')) return;
-  const { name, email, message } = req.body;
-  if (!name || !email || !message) {
-    return res.status(400).json({ error: 'All fields required.' });
-  }
   try {
     await dbConnect();
+    const rateLimit = await consumeContactRateLimit(req);
+    if (rateLimit.unavailable) {
+      return res.status(503).json({ error: 'Unable to verify request limit.' });
+    }
+    res.setHeader('X-RateLimit-Limit', rateLimit.limit);
+    res.setHeader('X-RateLimit-Remaining', rateLimit.remaining);
+    if (!rateLimit.allowed) {
+      res.setHeader('Retry-After', rateLimit.retryAfter);
+      return res.status(429).json({ error: 'Too many requests. Please try again later.' });
+    }
+
+    const { name, email, message } = req.body ?? {};
+    if (!name || !email || !message) {
+      return res.status(400).json({ error: 'All fields required.' });
+    }
     const newContact = new Contact({
       name: name.trim(),
       email: email.toLowerCase().trim(),
